@@ -1,0 +1,8 @@
+services:
+  neo4j:
+    image: neo4j:5
+    ports:
+      - "7474:7474"   # Browser UI
+      - "7687:7687"   # Bolt protocol (app connects here)
+    environment:
+      - NEO4J_AUTH=neo4j/entitlements   # DB credentials
