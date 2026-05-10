@@ -28,8 +28,8 @@ public class DemoDataSeeder
             await tx.RunAsync("""
                 CREATE (i1:Identity {subjectId: 'customer-001', name: 'Sandeep Sharma'})
                 CREATE (i2:Identity {subjectId: 'customer-002', name: 'Elon Musk'})
-                CREATE (i3:Identity {subjectId: 'customer-003', name: 'Tom Cruise'})
-                CREATE (i4:Identity {subjectId: 'customer-004', name: 'Poor Charlie'})
+                CREATE (i3:Identity {subjectId: 'customer-003', name: 'Poor Charlie'})
+                CREATE (i4:Identity {subjectId: 'operator-001', name: 'Tom Cruise'})
                 """);
 
             // Create Party Roles (BIAN-aligned)
@@ -56,7 +56,7 @@ public class DemoDataSeeder
                 CREATE (res3:Resource {resourceId: 'card-300', resourceType: 'DebitCard'})
                 """);
 
-            // Wire up: Sandeep is an AccountHolder with ViewBalance + InitiateTransfer on account-100
+            // Wire up: customer-001 is an AccountHolder with ViewBalance + InitiateTransfer on account-100
             await tx.RunAsync("""
                 MATCH (i:Identity {subjectId: 'customer-001'})
                 MATCH (role:PartyRole {name: 'AccountHolder'})
@@ -76,7 +76,7 @@ public class DemoDataSeeder
                 CREATE (ent)-[:GRANTS]->(p3)-[:ON_RESOURCE]->(res)
                 """);
 
-            // Wire up: Sandeep is also a CardHolder on card-300
+            // Wire up: customer-001 is also a CardHolder on card-300
             await tx.RunAsync("""
                 MATCH (i:Identity {subjectId: 'customer-001'})
                 MATCH (role:PartyRole {name: 'CardHolder'})
@@ -92,7 +92,7 @@ public class DemoDataSeeder
                 CREATE (ent)-[:GRANTS]->(p)-[:ON_RESOURCE]->(res)
                 """);
 
-            // Wire up: Elon Musk is an AccountHolder with ViewBalance only on account-200
+            // Wire up: customer-002 is an AccountHolder with ViewBalance only on account-200
             await tx.RunAsync("""
                 MATCH (i:Identity {subjectId: 'customer-002'})
                 MATCH (role:PartyRole {name: 'AccountHolder'})
@@ -108,9 +108,9 @@ public class DemoDataSeeder
                 CREATE (ent)-[:GRANTS]->(p)-[:ON_RESOURCE]->(res)
                 """);
 
-            // Wire up: Tom is a BranchOperator with ApprovePayment + ViewUserProfile on account-100
+            // Wire up: operator-001 is a BranchOperator with ViewUserProfile on all accounts
             await tx.RunAsync("""
-                MATCH (i:Identity {subjectId: 'customer-003'})
+                MATCH (i:Identity {subjectId: 'operator-001'})
                 MATCH (role:PartyRole {name: 'BranchOperator'})
                 CREATE (i)-[:HAS_ROLE]->(role)
 
@@ -119,11 +119,13 @@ public class DemoDataSeeder
                 CREATE (role)-[:HAS_ENTITLEMENT]->(ent)
 
                 WITH ent
-                MATCH (p1:Permission {name: 'ApprovePayment'})
-                MATCH (p2:Permission {name: 'ViewUserProfile'})
-                MATCH (res:Resource {resourceId: 'account-100'})
-                CREATE (ent)-[:GRANTS]->(p1)-[:ON_RESOURCE]->(res)
-                CREATE (ent)-[:GRANTS]->(p2)-[:ON_RESOURCE]->(res)
+                MATCH (p:Permission {name: 'ViewUserProfile'})
+                MATCH (res1:Resource {resourceId: 'account-100'})
+                MATCH (res2:Resource {resourceId: 'account-200'})
+                MATCH (res3:Resource {resourceId: 'card-300'})
+                CREATE (ent)-[:GRANTS]->(p)-[:ON_RESOURCE]->(res1)
+                CREATE (ent)-[:GRANTS]->(p)-[:ON_RESOURCE]->(res2)
+                CREATE (ent)-[:GRANTS]->(p)-[:ON_RESOURCE]->(res3)
                 """);
         });
     }

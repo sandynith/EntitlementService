@@ -117,4 +117,21 @@ dotnet test
 ```bash
 # Remove Neo4j docker container
 docker stop entitlements-neo4j-1 && docker rm entitlements-neo4j-1
+
+# Free up port if its in use
+lsof -ti:5021
+kill <pid>
 ```
+
+### Demo Seeder Data
+
+**Entitlement Mappings:**
+
+| Identity | Role | Permissions | Resources |
+|----------|------|-------------|-----------|
+| customer-001 | AccountHolder | ViewBalance, InitiateTransfer, ViewStatement | account-100 |
+| customer-001 | CardHolder | BlockCard | card-300 |
+| customer-002 | AccountHolder | ViewBalance | account-200 |
+| operator-001 | BranchOperator | ViewUserProfile | account-100, account-200, card-300 |
+
+**Ungranted:** `ApprovePayment` exists as a permission but is not assigned to anyone.
