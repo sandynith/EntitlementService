@@ -53,21 +53,21 @@ dotnet build
 dotnet run --project src/EntitlementService.Api
 ```
 
-Swagger UI: http://localhost:5062/swagger
+Swagger UI: http://localhost:5021/swagger
 
 **API endpoints:**
 
-GET http://localhost:5062/health
+GET http://localhost:5021/api/health
 
-POST http://localhost:5062/api/entitlements/seed
+POST http://localhost:5021/api/seed
 
-POST http://localhost:5062/api/entitlements/check
+POST http://localhost:5021/api/entitlements/check
 
 
 ### 3. Seed Demo Data
 
 ```bash
-curl -X POST http://localhost:5062/api/entitlements/seed
+curl -X POST http://localhost:5021/api/seed
 ```
 
 In Dev env it creates a sample graph with 3 identities, 3 roles, 5 permissions, and 3 resources.
@@ -76,7 +76,7 @@ In Dev env it creates a sample graph with 3 identities, 3 roles, 5 permissions, 
 
 ```bash
 # Request
-curl -X POST http://localhost:5062/api/entitlements/check \
+curl -X POST http://localhost:5021/api/entitlements/check \
   -H "Content-Type: application/json" \
   -d '{"subjectId":"customer-001","permissionName":"ViewBalance","resourceId":"account-100"}'
 
@@ -95,7 +95,7 @@ curl -X POST http://localhost:5062/api/entitlements/check \
 
 ```bash
 # Request
-curl -X POST http://localhost:5062/api/entitlements/check \
+curl -X POST http://localhost:5021/api/entitlements/check \
   -H "Content-Type: application/json" \
   -d '{"subjectId":"customer-002","permissionName":"InitiateTransfer","resourceId":"account-200"}'
 

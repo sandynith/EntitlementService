@@ -56,7 +56,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// GET /health — checks API and Neo4j connectivity
+// GET api/health — checks API and Neo4j connectivity
 app.MapGet("/api/health", async (IDriver driver) =>
 {
     try
