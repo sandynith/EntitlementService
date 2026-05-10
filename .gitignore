@@ -62,6 +62,6 @@ Thumbs.db
 
 # Environment / secrets
 appsettings.*.local.json
-.env
-*.env
-.env.*
+# .env  -- Commit .env file for the test exercise
+# *.env
+# .env.*

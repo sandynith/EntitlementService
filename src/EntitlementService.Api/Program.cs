@@ -4,6 +4,8 @@ using EntitlementService.Core.Models;
 using EntitlementService.Core.Services;
 using Neo4j.Driver;
 
+const int TIMEOUT_SECONDS = 5;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Load .env file if present (for local development)
@@ -40,7 +42,9 @@ if (string.IsNullOrEmpty(neo4jUri) || string.IsNullOrEmpty(neo4jUser) || string.
     throw new InvalidOperationException("Neo4j configuration is not defined. Set NEO4J_URI, NEO4J_USER, and NEO4J_PASSWORD environment variables.");
 
 builder.Services.AddSingleton<IDriver>(_ =>
-    GraphDatabase.Driver(neo4jUri, AuthTokens.Basic(neo4jUser, neo4jPassword)));
+    GraphDatabase.Driver(neo4jUri, AuthTokens.Basic(neo4jUser, neo4jPassword),
+        o => o.WithConnectionTimeout(TimeSpan.FromSeconds(TIMEOUT_SECONDS))
+              .WithConnectionAcquisitionTimeout(TimeSpan.FromSeconds(TIMEOUT_SECONDS))));
 
 builder.Services.AddScoped<IEntitlementRepository, Neo4jEntitlementRepository>();
 builder.Services.AddScoped<EntitlementCheckService>();
@@ -57,7 +61,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // GET api/health — checks API and Neo4j connectivity
-app.MapGet("/api/health", async (IDriver driver) =>
+app.MapGet("/api/health", async (IDriver driver, ILogger<Program> logger) =>
 {
     try
     {
@@ -65,14 +69,15 @@ app.MapGet("/api/health", async (IDriver driver) =>
         await session.ExecuteReadAsync(async tx =>
         {
             await tx.RunAsync("RETURN 1");
-        });
+        }).WaitAsync(TimeSpan.FromSeconds(TIMEOUT_SECONDS));
 
-        return Results.Ok(new { status = "healthy", neo4j = "connected" });
+        return Results.Ok(new { status = "healthy", database = "connected" });
     }
     catch (Exception ex)
     {
+        logger.LogError(ex, "Health check failed — DB not connected.");
         return Results.Json(
-            new { status = "unhealthy", neo4j = "disconnected", error = ex.Message },
+            new { status = "unhealthy", database = "disconnected" },
             statusCode: 503);
     }
 })
@@ -83,12 +88,24 @@ app.MapGet("/api/health", async (IDriver driver) =>
 // POST /api/entitlements/check — evaluate an entitlement
 app.MapPost("/api/entitlements/check", async (
     EntitlementCheckRequest request,
-    EntitlementCheckService service) =>
+    EntitlementCheckService service,
+    ILogger<Program> logger) =>
 {
-    var result = await service.EvaluateAsync(request);
-    return result.Allowed
-        ? Results.Ok(result)
-        : Results.Json(result, statusCode: 403);
+    try
+    {
+        var result = await service.EvaluateAsync(request).WaitAsync(TimeSpan.FromSeconds(TIMEOUT_SECONDS));
+        return result.Allowed
+            ? Results.Ok(result)
+            : Results.Json(result, statusCode: 403);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Entitlement check failed — DB not connected: Subject={SubjectId} Permission={Permission} Resource={Resource}",
+            request.SubjectId, request.PermissionName, request.ResourceId);
+        return Results.Json(
+            new { allowed = false, reason = "Service temporarily unavailable. Please try again later." },
+            statusCode: 503);
+    }
 })
 .WithName("CheckEntitlement")
 .WithTags("Entitlements")
@@ -97,10 +114,20 @@ app.MapPost("/api/entitlements/check", async (
 // POST /api/seed — dev only, loads demo data into Neo4j
 if (app.Environment.IsDevelopment())
 {
-    app.MapPost("/api/seed", async (DemoDataSeeder seeder) =>
+    app.MapPost("/api/seed", async (DemoDataSeeder seeder, ILogger<Program> logger) =>
     {
-        await seeder.SeedAsync();
-        return Results.Ok(new { message = "Demo data seeded successfully." });
+        try
+        {
+            await seeder.SeedAsync().WaitAsync(TimeSpan.FromSeconds(TIMEOUT_SECONDS));
+            return Results.Ok(new { message = "Demo data seeded successfully." });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to seed demo data. DB is not connected");
+            return Results.Json(
+                new { error = "Failed to seed demo data." },
+                statusCode: 503);
+        }
     })
     .WithName("SeedData")
     .WithTags("Admin")
