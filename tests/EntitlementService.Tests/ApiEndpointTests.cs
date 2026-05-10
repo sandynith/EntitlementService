@@ -67,18 +67,13 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task CheckEntitlement_WithEmptySubjectId_Returns403WithValidation()
+    public async Task CheckEntitlement_WithEmptySubjectId_Returns400()
     {
         var request = new EntitlementCheckRequest("", "ViewBalance", "account-100");
 
         var response = await _client.PostAsJsonAsync("/api/entitlements/check", request);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-
-        var body = await response.Content.ReadFromJsonAsync<EntitlementCheckResult>(JsonOptions);
-        Assert.NotNull(body);
-        Assert.False(body.Allowed);
-        Assert.Equal("SubjectId is required.", body.Reason);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

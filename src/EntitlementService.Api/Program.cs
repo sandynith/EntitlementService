@@ -11,16 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Load .env file if present (for local development)
 var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", ".env");
 if (File.Exists(envPath))
-{
-    foreach (var line in File.ReadAllLines(envPath))
-    {
-        if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
-            continue;
-        var parts = line.Split('=', 2);
-        if (parts.Length == 2)
-            Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
-    }
-}
+    DotNetEnv.Env.Load(envPath);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -91,6 +82,15 @@ app.MapPost("/api/entitlements/check", async (
     EntitlementCheckService service,
     ILogger<Program> logger) =>
 {
+    if (string.IsNullOrWhiteSpace(request.SubjectId) ||
+        string.IsNullOrWhiteSpace(request.PermissionName) ||
+        string.IsNullOrWhiteSpace(request.ResourceId))
+    {
+        return Results.Json(
+            new { allowed = false, reason = "SubjectId, PermissionName, and ResourceId are required." },
+            statusCode: 400);
+    }
+
     try
     {
         var result = await service.EvaluateAsync(request).WaitAsync(TimeSpan.FromSeconds(TIMEOUT_SECONDS));
