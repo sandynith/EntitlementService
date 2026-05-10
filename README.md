@@ -107,11 +107,16 @@ curl -X POST http://localhost:5021/api/entitlements/check \
 }
 ```
 
-## Run Tests
+## How to Tests
 
+1. Run unit tests - it runs unit test and API tests with mocked responses
 ```bash
 dotnet test
 ```
+
+2. E2E test: Seed Neo4j DB and then test using `EntitlementService.Api.http`
+
+
 ### Tear down
 
 ```bash

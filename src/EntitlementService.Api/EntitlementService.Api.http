@@ -4,7 +4,7 @@
 POST {{baseUrl}}/api/seed
 Content-Type: application/json
 
-### Check: Alice can ViewBalance on account-100 (ALLOWED)
+### Check: customer-001 can ViewBalance on account-100 (ALLOWED)
 POST {{baseUrl}}/api/entitlements/check
 Content-Type: application/json
 
@@ -14,7 +14,7 @@ Content-Type: application/json
   "resourceId": "account-100"
 }
 
-### Check: Alice can InitiateTransfer on account-100 (ALLOWED)
+### Check: customer-001 can InitiateTransfer on account-100 (ALLOWED)
 POST {{baseUrl}}/api/entitlements/check
 Content-Type: application/json
 
@@ -24,7 +24,17 @@ Content-Type: application/json
   "resourceId": "account-100"
 }
 
-### Check: Bob tries InitiateTransfer on account-200 (DENIED - no such permission)
+### Check: customer-002 tries ViewBalance on account-200 (Allowed)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "customer-002",
+  "permissionName": "ViewBalance",
+  "resourceId": "account-200"
+}
+
+### Check: customer-002 tries InitiateTransfer on account-200 (DENIED - only has ViewBalance)
 POST {{baseUrl}}/api/entitlements/check
 Content-Type: application/json
 
@@ -34,7 +44,7 @@ Content-Type: application/json
   "resourceId": "account-200"
 }
 
-### Check: Alice tries ApprovePayment on account-100 (DENIED - only Charlie can)
+### Check: customer-001 tries ApprovePayment on account-100 (DENIED - no role grants this permission)
 POST {{baseUrl}}/api/entitlements/check
 Content-Type: application/json
 
@@ -42,6 +52,26 @@ Content-Type: application/json
   "subjectId": "customer-001",
   "permissionName": "ApprovePayment",
   "resourceId": "account-100"
+}
+
+### Check: operator-001 tries ViewUserProfile on account-200 (Allowed)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "operator-001",
+  "permissionName": "ViewUserProfile",
+  "resourceId": "account-200"
+}
+
+### Check: operator-001 tries ViewBalance on account-200 (DENIED)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "operator-001",
+  "permissionName": "ViewBalance",
+  "resourceId": "account-200"
 }
 
 ### Check: unknown subject (DENIED)
