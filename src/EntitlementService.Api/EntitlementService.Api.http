@@ -1,6 +1,55 @@
-@EntitlementService.Api_HostAddress = http://localhost:5021
+@baseUrl = http://localhost:5021
 
-GET {{EntitlementService.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Seed demo data
+POST {{baseUrl}}/api/seed
+Content-Type: application/json
 
-###
+### Check: Alice can ViewBalance on account-100 (ALLOWED)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "customer-001",
+  "permissionName": "ViewBalance",
+  "resourceId": "account-100"
+}
+
+### Check: Alice can InitiateTransfer on account-100 (ALLOWED)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "customer-001",
+  "permissionName": "InitiateTransfer",
+  "resourceId": "account-100"
+}
+
+### Check: Bob tries InitiateTransfer on account-200 (DENIED - no such permission)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "customer-002",
+  "permissionName": "InitiateTransfer",
+  "resourceId": "account-200"
+}
+
+### Check: Alice tries ApprovePayment on account-100 (DENIED - only Charlie can)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "customer-001",
+  "permissionName": "ApprovePayment",
+  "resourceId": "account-100"
+}
+
+### Check: unknown subject (DENIED)
+POST {{baseUrl}}/api/entitlements/check
+Content-Type: application/json
+
+{
+  "subjectId": "unknown-999",
+  "permissionName": "ViewBalance",
+  "resourceId": "account-100"
+}

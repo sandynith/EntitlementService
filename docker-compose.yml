@@ -5,4 +5,9 @@ services:
       - "7474:7474"   # Browser UI
       - "7687:7687"   # Bolt protocol (app connects here)
     environment:
-      - NEO4J_AUTH=neo4j/entitlements   # DB credentials
+      - NEO4J_AUTH=neo4j/entitlements
+    volumes:
+      - neo4j_data:/data
+
+volumes:
+  neo4j_data:
