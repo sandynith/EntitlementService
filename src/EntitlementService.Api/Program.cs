@@ -8,8 +8,8 @@ const int TIMEOUT_SECONDS = 5;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load .env file if present (for local development)
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", ".env");
+// Load .env from solution root (for local development)
+var envPath = Path.Combine(builder.Environment.ContentRootPath, "..", "..", ".env");
 if (File.Exists(envPath))
     DotNetEnv.Env.Load(envPath);
 

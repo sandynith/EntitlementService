@@ -24,8 +24,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
         _client = factory.CreateClient();
     }
 
-    // ── POST /api/entitlements/check ──────────────────────────────
-
+    // POST /api/entitlements/check
     [Fact]
     public async Task CheckEntitlement_WhenAllowed_Returns200WithGrant()
     {
@@ -44,6 +43,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
         Assert.NotNull(body);
         Assert.True(body.Allowed);
         Assert.NotNull(body.Grant);
+        Assert.Equal("ent-001", body.Grant.EntitlementId);
         Assert.Equal("AccountHolder", body.Grant.RoleName);
     }
 
@@ -83,11 +83,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
             "/api/entitlements/check",
             new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
 
-        // Empty JSON object deserialises to default/null strings, which triggers validation → 403
-        // OR the framework may reject it as 400. Either is acceptable.
-        Assert.True(
-            response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Forbidden,
-            $"Expected 400 or 403 but got {(int)response.StatusCode}");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -103,8 +99,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
     }
 
-    // ── GET /api/health ──────────────────────────────────────────
-
+    // GET /api/health 
     [Fact]
     public async Task Health_WhenNeo4jIsReachable_Returns200()
     {
@@ -139,8 +134,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
         Assert.Equal("unhealthy", json.GetProperty("status").GetString());
     }
 
-    // ── Fallback / unknown routes ────────────────────────────────
-
+    // Fallback/unknown routes
     [Fact]
     public async Task UnknownRoute_Returns404()
     {
@@ -150,13 +144,10 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task CheckEntitlement_WithGetMethod_Returns405OrNotFound()
+    public async Task CheckEntitlement_WithGetMethod_ReturnsNotFound()
     {
         var response = await _client.GetAsync("/api/entitlements/check");
 
-        // Minimal API returns 405 MethodNotAllowed or falls through to 404
-        Assert.True(
-            response.StatusCode is HttpStatusCode.MethodNotAllowed or HttpStatusCode.NotFound,
-            $"Expected 405 or 404 but got {(int)response.StatusCode}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

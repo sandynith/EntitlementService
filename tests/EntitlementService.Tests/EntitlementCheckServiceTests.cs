@@ -129,7 +129,8 @@ public class EntitlementCheckServiceTests
         var result = await _service.EvaluateAsync(request);
 
         Assert.True(result.Allowed);
-        Assert.Equal("BranchOperator", result.Grant!.RoleName);
+        Assert.Equal("ent-004", result.Grant!.EntitlementId);
+        Assert.Equal("BranchOperator", result.Grant.RoleName);
         Assert.Equal("ApprovePayment", result.Grant.PermissionName);
         Assert.Equal("account-100", result.Grant.ResourceId);
     }

@@ -141,3 +141,9 @@ kill <pid>
 | operator-001 | BranchOperator | ViewUserProfile | account-100, account-200, card-300 |
 
 **Ungranted:** `ApprovePayment` exists as a permission but is not assigned to anyone.
+
+
+### Note
+
+Place .env file in root folder. The .env file is committed only to make the demo exercise runnable out of the box.  
+Do not commit real secrets in production projects.
