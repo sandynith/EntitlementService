@@ -29,7 +29,7 @@ public class ApiEndpointTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task CheckEntitlement_WhenAllowed_Returns200WithGrant()
     {
-        var grant = new EntitlementGrant("customer-001", "AccountHolder", "ViewBalance", "account-100");
+        var grant = new EntitlementGrant("ent-001", "customer-001", "AccountHolder", "ViewBalance", "account-100");
         _factory.MockRepository
             .FindEntitlementAsync("customer-001", "ViewBalance", "account-100")
             .Returns(grant);

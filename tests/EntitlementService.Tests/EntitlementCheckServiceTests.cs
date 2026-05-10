@@ -19,7 +19,7 @@ public class EntitlementCheckServiceTests
     [Fact]
     public async Task Evaluate_WhenEntitlementPathExists_ReturnsAllowed()
     {
-        var grant = new EntitlementGrant("customer-001", "AccountHolder", "ViewBalance", "account-100");
+        var grant = new EntitlementGrant("ent-001", "customer-001", "AccountHolder", "ViewBalance", "account-100");
         _repository
             .FindEntitlementAsync("customer-001", "ViewBalance", "account-100")
             .Returns(grant);
@@ -119,7 +119,7 @@ public class EntitlementCheckServiceTests
     [Fact]
     public async Task Evaluate_GrantedResult_ContainsCorrectGrantDetails()
     {
-        var grant = new EntitlementGrant("customer-003", "BranchOperator", "ApprovePayment", "account-100");
+        var grant = new EntitlementGrant("ent-004", "customer-003", "BranchOperator", "ApprovePayment", "account-100");
         _repository
             .FindEntitlementAsync("customer-003", "ApprovePayment", "account-100")
             .Returns(grant);

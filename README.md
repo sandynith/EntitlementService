@@ -85,6 +85,7 @@ curl -X POST http://localhost:5021/api/entitlements/check \
   "allowed": true,
   "reason": "Access granted via role 'AccountHolder' with permission 'ViewBalance'.",
   "grant": {
+    "entitlementId": "ent-003",
     "subjectId": "customer-001",
     "roleName": "AccountHolder",
     "permissionName": "ViewBalance",
@@ -107,7 +108,7 @@ curl -X POST http://localhost:5021/api/entitlements/check \
 }
 ```
 
-## How to Tests
+## How to test
 
 1. Run unit tests - it runs unit test and API tests with mocked responses
 ```bash

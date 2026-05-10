@@ -25,7 +25,8 @@ public class Neo4jEntitlementRepository : IEntitlementRepository
                   -[:HAS_ENTITLEMENT]->(ent:Entitlement)
                   -[:GRANTS]->(perm:Permission {name: $permissionName})
                   -[:ON_RESOURCE]->(res:Resource {resourceId: $resourceId})
-            RETURN role.name AS roleName,
+            RETURN ent.entitlementId AS entitlementId,
+                   role.name AS roleName,
                    perm.name AS permissionName,
                    res.resourceId AS resourceId
             LIMIT 1
@@ -43,6 +44,7 @@ public class Neo4jEntitlementRepository : IEntitlementRepository
             if (await cursor.FetchAsync())
             {
                 return new EntitlementGrant(
+                    cursor.Current["entitlementId"].As<string>(),
                     subjectId,
                     cursor.Current["roleName"].As<string>(),
                     cursor.Current["permissionName"].As<string>(),
